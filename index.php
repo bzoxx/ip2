@@ -12,14 +12,14 @@
     <!-- Header -->
     <header>
         <div class="logo">
-            <h1 ><a href="index.html" id="Blind" aria-label="Go to Blind Cupid Home">Blind Cupid</a></h1>
+            <h1 ><a href="index.php" id="Blind" aria-label="Go to Blind Cupid Home">Blind Cupid</a></h1>
         </div><!-- where is it -->
         <nav>
             <ul>
-                <li><a href="index.html" aria-label="Go to Home">Home</a></li>
-                <li><a href="signup.html" aria-label="Sign Up">Sign Up</a></li>
-                <li><a href="login.html" aria-label="Login to your account">Login</a></li>
-                <li><a href="about.html" aria-label="Learn How Blind Date Hub Works">About</a></li>
+                <li><a href="index.php" aria-label="Go to Home">Home</a></li>
+                <li><a href="signup.php" aria-label="Sign Up">Sign Up</a></li>
+                <li><a href="login.php" aria-label="Login to your account">Login</a></li>
+                <li><a href="about.php" aria-label="Learn How Blind Date Hub Works">About</a></li>
             </ul>
         </nav>
     </header>
@@ -76,9 +76,9 @@
     
         <p>&copy; 2024 Blind Cupid. All rights reserved.</p>
         <p>
-            <a href="about.html" aria-label="Learn more about us">About</a> | 
-            <a href="privacyPolicy.html" aria-label="Read our Privacy Policy">Privacy Policy</a> | 
-            <a href="terms.html" aria-label="Review our Terms of Service">Terms of Service</a>
+            <a href="about.php" aria-label="Learn more about us">About</a> | 
+            <a href="privacyPolicy.php" aria-label="Read our Privacy Policy">Privacy Policy</a> | 
+            <a href="terms.php" aria-label="Review our Terms of Service">Terms of Service</a>
         </p>
     </footer>
 
