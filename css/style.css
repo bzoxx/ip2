@@ -1,0 +1,275 @@
+/* Define Theme Colors */
+:root {
+    --primary-color: #a25ddc; /* Purple */
+    --secondary-color: #ff6ec7; /* Pink */
+    --background-color: #fefaff;
+    --text-color: #333;
+    --white: #ffffff;
+}
+/* Responsive Design for Mobile */
+@media (max-width: 768px) {
+    /* General Layout */
+    body {
+        font-size: 14px;
+    }
+
+    header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    header nav ul {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .hero {
+        flex-direction: column;
+        text-align: center;
+        padding: 20px;
+    }
+
+    .hero-content {
+        max-width: 100%;
+    }
+
+    .hero h1 {
+        font-size: 32px;
+    }
+
+    .hero p {
+        font-size: 16px;
+    }
+
+    .hero-image img {
+        max-width: 80%;
+        margin-top: 20px;
+    }
+
+    .cta-button {
+        font-size: 16px;
+        padding: 10px 15px;
+    }
+
+    .features {
+        padding: 20px;
+    }
+
+    .feature-cards {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .card {
+        max-width: 100%;
+        margin: 0 auto;
+    }
+
+    .testimonials {
+        padding: 20px;
+    }
+
+    .testimonials h2 {
+        font-size: 28px;
+    }
+
+    .testimonial p {
+        font-size: 16px;
+    }
+
+    footer {
+        font-size: 14px;
+        padding: 15px; 
+    }
+}
+/* Global Styles */
+body {
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+main {
+    flex: 1;
+}
+
+a {
+    text-decoration: none;
+    color: var(--white);
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Header */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background-color: var(--primary-color);
+    color: var(--white);
+}
+
+
+
+header nav ul {
+    display: flex;
+    gap: 15px;
+}
+
+header nav a {
+    color: var(--white);
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+header nav a:hover {
+    color: var(--secondary-color);
+}
+
+/* Hero Section */
+.hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 40px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: var(--white);
+}
+
+.hero-content {
+    max-width: 50%;
+}
+
+.hero h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+.hero p {
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+.cta-button {
+    display: inline-block;
+    background-color: var(--secondary-color);
+    color: var(--white);
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 18px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.cta-button:hover {
+    background-color: var(--white);
+    color: var(--secondary-color);
+}
+
+.hero-image img {
+    max-width: 100%;
+    border-radius: 10px;
+}
+
+/* Features Section */
+.features {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.features h2 {
+    font-size: 36px;
+    margin-bottom: 20px;
+}
+
+.feature-cards {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.card {
+    background-color: var(--white);
+    border: 1px solid var(--primary-color);
+    border-radius: 10px;
+    padding: 20px;
+    max-width: 300px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+.feature-cards div:hover{
+    transform: scale(1.05);
+}
+
+.card img {
+    max-width: 100%;
+    margin-bottom: 15px;
+}
+
+.card h3 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.card p {
+    font-size: 16px;
+}
+
+/* Testimonials Section */
+.testimonials {
+    background-color: var(--primary-color);
+    color: var(--white);
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.testimonials h2 {
+    font-size: 36px;
+    margin-bottom: 20px;
+}
+
+.testimonial {
+    margin-bottom: 20px;
+}
+
+.testimonial p {
+    font-size: 18px;
+    font-style: italic;
+}
+
+.testimonial span {
+    display: block;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 20px;
+    background-color: var(--primary-color);
+    color: var(--white);
+}
+
+footer a {
+    color: var(--white);
+    font-weight: bold;
+    margin: 0 5px;
+    transition: color 0.3s ease;
+}
+
+footer a:hover {
+    color: var(--secondary-color);
+}
+
+
+
