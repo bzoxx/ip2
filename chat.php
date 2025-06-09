@@ -1,45 +1,71 @@
-<?php require_once "checklogin.php"; ?>
+<?php require_once "checklogin.php"; 
+
+// Get the receiver ID from URL
+$receiver_id = isset($_GET['user']) ? (int)$_GET['user'] : 0;
+if (!$receiver_id) {
+    header("Location: chatlist.php");
+    exit;
+}
+
+// Get receiver details and check for approved match
+try {
+    $connect->exec("USE dating_app");
+    
+    // First get receiver details
+    $stmt = $connect->prepare("SELECT username FROM users WHERE id = ?");
+    $stmt->execute([$receiver_id]);
+    $receiver = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if (!$receiver) {
+        header("Location: chatlist.php");
+        exit;
+    }
+
+    // Check for approved match
+    $stmt = $connect->prepare("SELECT * FROM matches WHERE 
+        ((connect = ? AND wtih = ?) OR (connect = ? AND wtih = ?)) 
+        AND approved = 1");
+    $stmt->execute([
+        $_SESSION['user_id'], 
+        $receiver_id,
+        $receiver_id,
+        $_SESSION['user_id']
+    ]);
+    
+    if ($stmt->rowCount() === 0) {
+        // No approved match found
+        header("Location: chatlist.php?error=no_match");
+        exit;
+    }
+
+} catch(PDOException $e) {
+    error_log("Error: " . $e->getMessage());
+    header("Location: chatlist.php");
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat - Blind Date Hub</title>
+    <title>Chat with <?= htmlspecialchars($receiver['username']) ?> - Blind Date Hub</title>
     <link rel="stylesheet" href="css/chat.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/png" href="images/logo.png">
-
-
 </head>
 <body>
-
-    <!-- Header -->
-    <header>
-        <div class="logo">
-            <h1>Blind Date Hub</h1>
-        </div>
-        <nav>
-            <ul>
-                <li><a href="dashboard.php" aria-label="Go to Dashboard">Dashboard</a></li>
-                <li><a href="matchmaking.php" aria-label="Start Matchmaking">Matchmaking</a></li>
-                <li><a href="about.php" aria-label="Learn How Blind Date Hub Works">How It Works</a></li>
-            </ul>
-        </nav>
-    </header>
+    <!-- Back Button -->
+    <div class="back-button">
+        <a href="chatlist.php"><i class="fas fa-arrow-left"></i> Back to Chat List</a>
+    </div>
 
     <!-- Main Content -->
     <main>
-        <h1>Chat with Match</h1>
-        <section class="tags">
-            <div class="tag">Horror Movies</div>
-            <div class="tag">Skateboarding</div>
-            <div class="tag">Reading</div>
-            <div class="tag">Cooking</div>
-            <div class="tag">Traveling</div>
-            <div class="tag">Photography</div>
-        </section>
+        <h1>Chat with <?= htmlspecialchars($receiver['username']) ?></h1>
         <div class="chat-box">
             <div class="messages" id="messages">
-                <!-- Chat messages will go here -->
+                <!-- Chat messages will be loaded here -->
             </div>
             <div style="display: flex;">
                 <input type="text" id="messageInput" placeholder="Type a message...">
@@ -48,72 +74,75 @@
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer>
-        <p>&copy; 2024 Blind Date Hub. All rights reserved.</p>
-        <p><a href="about.php">About</a> | <a href="privacyPolicy.php">Privacy Policy</a> | <a href="terms.php">Terms of Service</a></p>
-    </footer>
 
-   <script>
-    
+    <script>
     const messagesDiv = document.getElementById('messages');
-const messageInput = document.getElementById('messageInput');
-const sendMessageButton = document.getElementById('sendMessage');
+    const messageInput = document.getElementById('messageInput');
+    const sendMessageButton = document.getElementById('sendMessage');
+    const receiverId = <?= $receiver_id ?>;
+    let lastMessageId = 0;
 
-// Default responses for common messages
-const defaultResponses = {
-    "hi": "Hi!",
-    "hey": "hey there!",
-    "hello": "Hello!",
-    "how are you": "good! How are you doing?",
-    "what's up": "Not much, what about you?",
-    "im doing well": "nice",
-    "bye": "Goodbye! Have a great day!",
-    "thank you": "You're welcome!",
-    "who are you": "I am your friendly chat bot!"
-};
-
-// Function to handle sending a message
-function handleSendMessage() {
-    const userMessage = messageInput.value.trim().toLowerCase(); // Convert to lowercase for matching
-    if (userMessage) {
-        // Add user message to chat
-        addMessage(userMessage, 'user');
-
-        // Determine bot response
-        const botResponse = defaultResponses[userMessage] || "I'm not sure how to respond to that.";
-
-        // Simulate bot response after 1 second
-        setTimeout(() => {
-            addMessage(botResponse, 'bot');
-        }, 1000);
-
-        // Clear input field
-        messageInput.value = '';
+    // Function to load messages
+    function loadMessages() {
+        fetch(`get_messages.php?receiver_id=${receiverId}&last_id=${lastMessageId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.messages && data.messages.length > 0) {
+                    data.messages.forEach(msg => {
+                        addMessage(msg.message, msg.sender_id == <?= $_SESSION['user_id'] ?> ? 'user' : 'receiver');
+                        lastMessageId = Math.max(lastMessageId, msg.id);
+                    });
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                }
+            })
+            .catch(error => console.error('Error loading messages:', error));
     }
-}
 
-// Send message on button click
-sendMessageButton.addEventListener('click', handleSendMessage);
+    // Function to send message
+    function handleSendMessage() {
+        const message = messageInput.value.trim();
+        if (message) {
+            const formData = new FormData();
+            formData.append('receiver_id', receiverId);
+            formData.append('message', message);
 
-// Send message on Enter key press
-messageInput.addEventListener('keypress', (event) => {
-    if (event.key === 'Enter') {
-        handleSendMessage();
-        event.preventDefault(); // Prevent form submission if inside a form
+            fetch('send_message.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    addMessage(message, 'user');
+                    messageInput.value = '';
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                    lastMessageId = data.message_id;
+                }
+            })
+            .catch(error => console.error('Error sending message:', error));
+        }
     }
-});
 
-function addMessage(text, type) {
-    const messageDiv = document.createElement('div');
-    messageDiv.classList.add('message', type);
-    messageDiv.textContent = text;
-    messagesDiv.appendChild(messageDiv);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight; // Scroll to the bottom
-}
+    // Function to add message to chat
+    function addMessage(text, type) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message', type);
+        messageDiv.textContent = text;
+        messagesDiv.appendChild(messageDiv);
+    }
 
-</script>
+    // Event listeners
+    sendMessageButton.addEventListener('click', handleSendMessage);
+    messageInput.addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') {
+            handleSendMessage();
+            event.preventDefault();
+        }
+    });
 
-
+    // Load initial messages and set up polling
+    loadMessages();
+    setInterval(loadMessages, 3000); // Poll for new messages every 3 seconds
+    </script>
 </body>
 </html>
