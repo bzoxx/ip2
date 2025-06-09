@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,7 +32,7 @@
             <div class="hero-content">
                 <h1><?php echo "Welcome to Blind Cupid" ?></h1>
                 <p>Find your match through meaningful conversations. No photos, just connections!</p>
-                <a href="signup.html" class="cta-button">Get Started</a>
+                <a href="signup.php" class="cta-button">Get Started</a>
             </div>
             <div class="hero-image">
                 <img src="images/hero-dating.webp" alt="Two phones" />
