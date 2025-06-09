@@ -1,73 +1,66 @@
-<?php 
+<?php
 require_once "checklogin.php";
 
-// Initialize variables
-$username = $email = $birthdate = $location = $bio = '';
-$age = '';
+$message = '';
+$user_data = null;
 
-// Fetch user data from database
 try {
-    $query = "SELECT username, email, birthdate, location, preferences AS bio FROM users WHERE id = :user_id";
-    $stmt = $connect->prepare($query);
-    $stmt->bindParam(':user_id', $_SESSION['user_id'], PDO::PARAM_INT);
-    $stmt->execute();
+    $connect->exec("USE dating_app");
     
-    if ($user = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $username = htmlspecialchars($user['username']);
-        $email = htmlspecialchars($user['email']);
-        $birthdate = htmlspecialchars($user['birthdate']);
-        $location = htmlspecialchars($user['location']);
-        $bio = htmlspecialchars($user['bio']);
-        
-        // Calculate age from birthdate
-        if (!empty($birthdate)) {
-            $birthDate = new DateTime($birthdate);
-            $today = new DateTime();
-            $age = $today->diff($birthDate)->y;
+    // Fetch user data
+    $query = "SELECT * FROM users WHERE id = :user_id";
+    $stmt = $connect->prepare($query);
+    $stmt->bindParam(':user_id', $_SESSION['user_id']);
+    $stmt->execute();
+    $user_data = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // Handle profile update
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $username = trim($_POST['username'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+        $preferences = trim($_POST['preferences'] ?? '');
+        $birthdate = $_POST['birthdate'] ?? '';
+        $gender = isset($_POST['gender']) ? ($_POST['gender'] === 'female' ? 0 : 1) : $user_data['gender'];
+
+        // Validate email format
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $message = "Invalid email format";
+        } else {
+            // Check if email exists for other users
+            $email_check = $connect->prepare("SELECT id FROM users WHERE email = :email AND id != :user_id");
+            $email_check->bindParam(':email', $email);
+            $email_check->bindParam(':user_id', $_SESSION['user_id']);
+            $email_check->execute();
+
+            if ($email_check->rowCount() > 0) {
+                $message = "Email already exists";
+            } else {
+                // Update profile
+                $update = $connect->prepare("UPDATE users SET username = :username, email = :email, 
+                                          preferences = :preferences, birthdate = :birthdate, gender = :gender 
+                                          WHERE id = :user_id");
+                
+                $update->bindParam(':username', $username);
+                $update->bindParam(':email', $email);
+                $update->bindParam(':preferences', $preferences);
+                $update->bindParam(':birthdate', $birthdate);
+                $update->bindParam(':gender', $gender);
+                $update->bindParam(':user_id', $_SESSION['user_id']);
+
+                if ($update->execute()) {
+                    $message = "Profile updated successfully!";
+                    // Refresh user data
+                    $stmt->execute();
+                    $user_data = $stmt->fetch(PDO::FETCH_ASSOC);
+                } else {
+                    $message = "Error updating profile";
+                }
+            }
         }
     }
 } catch(PDOException $e) {
-    error_log("Error fetching user data: " . $e->getMessage());
-    $_SESSION['error'] = "Error loading profile data. Please try again.";
-}
-
-// Handle form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    try {
-        $newAge = filter_input(INPUT_POST, 'age', FILTER_VALIDATE_INT, 
-            ['options' => ['min_range' => 18, 'max_range' => 120]]);
-        $newLocation = filter_input(INPUT_POST, 'location', FILTER_SANITIZE_STRING);
-        $newBio = filter_input(INPUT_POST, 'bio', FILTER_SANITIZE_STRING);
-        
-        // Validate inputs
-        if ($newAge === false) {
-            throw new Exception("Please enter a valid age (18-120)");
-        }
-        
-        // Calculate new birthdate based on age
-        $newBirthdate = (new DateTime())->sub(new DateInterval("P{$newAge}Y"))->format('Y-m-d');
-        
-        // Update database
-        $query = "UPDATE users SET 
-                  birthdate = :birthdate, 
-                  location = :location, 
-                  preferences = :bio 
-                  WHERE id = :user_id";
-        $stmt = $connect->prepare($query);
-        $stmt->bindParam(':birthdate', $newBirthdate);
-        $stmt->bindParam(':location', $newLocation);
-        $stmt->bindParam(':bio', $newBio);
-        $stmt->bindParam(':user_id', $_SESSION['user_id']);
-        $stmt->execute();
-        
-        $_SESSION['success'] = "Profile updated successfully!";
-        header("Location: profile.php");
-        exit();
-        
-    } catch(Exception $e) {
-        error_log("Error updating profile: " . $e->getMessage());
-        $_SESSION['error'] = $e->getMessage();
-    }
+    error_log("Error in profile.php: " . $e->getMessage());
+    $message = "An error occurred. Please try again later.";
 }
 ?>
 <!DOCTYPE html>
@@ -75,86 +68,93 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile - Blind Cupid</title>
+    <title>Profile - Blind Date Hub</title>
+    <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/profile.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/png" href="images/logo.png">
-    <style>
-        .error { color: red; margin-bottom: 15px; }
-        .success { color: green; margin-bottom: 15px; }
-        input, textarea {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        button {
-            background-color: #e91e63;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #c2185b;
-        }
-    </style>
+    <script src="js/common.js" defer></script>
 </head>
 <body>
+    <?php require_once "includes/header.php"; ?>
 
-    <!-- Header -->
-    <header>
-        <div class="logo">
-            <h1>Blind Cupid</h1>
+    <main class="profile-main">
+        <div class="profile-container">
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <i class="fas fa-user"></i>
+                    <div class="profile-status">
+                        <?php if ($user_data['gender'] == 1): ?>
+                            <span class="gender-icon male"><i class="fas fa-mars"></i></span>
+                        <?php else: ?>
+                            <span class="gender-icon female"><i class="fas fa-venus"></i></span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <h1><?= htmlspecialchars($user_data['username']) ?></h1>
+            </div>
+
+            <?php if ($message): ?>
+                <div class="alert <?= strpos($message, 'success') !== false ? 'alert-success' : 'alert-error' ?>">
+                    <?= htmlspecialchars($message) ?>
+                </div>
+            <?php endif; ?>
+
+            <form method="POST" class="profile-form">
+                <div class="form-group">
+                    <label for="username">
+                        <i class="fas fa-user"></i> Username
+                    </label>
+                    <input type="text" id="username" name="username" 
+                           value="<?= htmlspecialchars($user_data['username']) ?>" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">
+                        <i class="fas fa-envelope"></i> Email
+                    </label>
+                    <input type="email" id="email" name="email" 
+                           value="<?= htmlspecialchars($user_data['email']) ?>" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="birthdate">
+                        <i class="fas fa-calendar"></i> Birth Date
+                    </label>
+                    <input type="date" id="birthdate" name="birthdate" 
+                           value="<?= htmlspecialchars($user_data['birthdate']) ?>" required>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-venus-mars"></i> Gender
+                    </label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="gender" value="female" 
+                                   <?= $user_data['gender'] == 0 ? 'checked' : '' ?>> Female
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="gender" value="male" 
+                                   <?= $user_data['gender'] == 1 ? 'checked' : '' ?>> Male
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="preferences">
+                        <i class="fas fa-heart"></i> About Me & Preferences
+                    </label>
+                    <textarea id="preferences" name="preferences" rows="4"><?= htmlspecialchars($user_data['preferences']) ?></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn update-btn">
+                        <i class="fas fa-save"></i> Update Profile
+                    </button>
+                </div>
+            </form>
         </div>
-        <nav>
-            <ul>
-                <li><a href="index.php" aria-label="Go to Home">Home</a></li>
-                <li><a href="dashboard.php" aria-label="Go to Dashboard">Dashboard</a></li>
-                <li><a href="profile.php" aria-label="View your Profile">Profile</a></li>
-                <li><a href="settings.php" aria-label="Go to Settings">Settings</a></li>
-            </ul>
-        </nav>
-    </header>
-
-    <!-- Main Content -->
-    <main>
-        <h1>Your Profile</h1>
-        
-        <?php if (isset($_SESSION['error'])): ?>
-            <div class="error"><?= $_SESSION['error']; unset($_SESSION['error']); ?></div>
-        <?php endif; ?>
-        
-        <?php if (isset($_SESSION['success'])): ?>
-            <div class="success"><?= $_SESSION['success']; unset($_SESSION['success']); ?></div>
-        <?php endif; ?>
-        
-        <form method="post">
-            <label for="username">Username:</label>
-            <input type="text" id="username" value="<?= $username ?>" disabled>
-            
-            <label for="email">Email:</label>
-            <input type="email" id="email" value="<?= $email ?>" disabled>
-            
-            <label for="age">Age:</label>
-            <input type="number" id="age" name="age" value="<?= $age ?>" min="18" max="120" required placeholder="<?= $age ?>">
-            
-            <label for="location">Location:</label>
-            <input type="text" id="location" name="location" value="<?= $location ?>" placeholder="<?= $location ?>">
-            
-            <label for="bio">Bio:</label>
-            <textarea id="bio" name="bio" placeholder="<?= $bio ?>"><?= $bio ?></textarea>
-            
-            <button type="submit">Update Profile</button>
-        </form>
     </main>
-
-    <!-- Footer -->
-    <footer>
-        <p>&copy; 2024 Blind Cupid. All rights reserved.</p>
-        <p><a href="about.php">About</a> | <a href="privacyPolicy.php">Privacy Policy</a> | <a href="terms.php">Terms of Service</a></p>
-    </footer>
-
 </body>
 </html>
