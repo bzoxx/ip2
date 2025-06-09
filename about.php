@@ -12,14 +12,14 @@
     <!-- Header -->
     <header>
         <div class="logo">
-            <h1><a href="index.html" aria-label="Go to Blind Date Hub Home">Blind Cupid</a></h1>
+            <h1><a href="index.php" aria-label="Go to Blind Date Hub Home">Blind Cupid</a></h1>
         </div>
         <nav>
             <ul>
-                <li><a href="index.html" aria-label="Go to Home">Home</a></li>
-                <li><a href="signup.html" aria-label="Sign Up">Sign Up</a></li>
-                <li><a href="login.html" aria-label="Login to your account">Login</a></li>
-                <li><a href="about.html" aria-label="Learn More About Us">About</a></li>
+                <li><a href="index.php" aria-label="Go to Home">Home</a></li>
+                <li><a href="signup.php" aria-label="Sign Up">Sign Up</a></li>
+                <li><a href="login.php" aria-label="Login to your account">Login</a></li>
+                <li><a href="about.php" aria-label="Learn More About Us">About</a></li>
             </ul>
         </nav>
     </header>
@@ -55,7 +55,7 @@
                     <p>Our algorithm matches you with compatible users.</p>
                 </div>
                 <div class="step">
-                    <img src="images/step3.webp" alt="Conversation Illustration" />
+                    <img src="images/step1.webp" alt="Conversation Illustration" />
                     <h3>Step 3: Start Chatting</h3>
                     <p>Engage in conversations to build meaningful connections.</p>
                 </div>

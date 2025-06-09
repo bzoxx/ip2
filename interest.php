@@ -1,4 +1,24 @@
-<?php require_once "checklogin.php"; ?>
+<?php 
+require_once "checklogin.php"; 
+
+// Check if user has already selected interests
+try {
+    $user_id = $_SESSION['user_id']; // Assuming user_id is stored in session
+    $query = "SELECT COUNT(*) FROM user_interest WHERE user_id = :user_id";
+    $stmt = $connect->prepare($query);
+    $stmt->execute(['user_id' => $user_id]);
+    $count = $stmt->fetchColumn();
+
+    // If user has interests, redirect to dashboard
+    if ($count > 0) {
+        header("Location: dashboard.php");
+        exit();
+    }
+} catch(PDOException $e) {
+    // Log error and continue to show interest selection
+    error_log("Error checking user interests: " . $e->getMessage());
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
