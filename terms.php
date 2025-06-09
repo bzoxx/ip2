@@ -15,11 +15,6 @@
         <div class="logo">
             <h1>Blind Cupid</h1>
         </div>
-        <nav>
-            <ul>
-                <li><a href="index.html" aria-label="Go to Home">Home</a></li>
-         </ul>
-        </nav>
     </header>
 
     <!-- Main Content -->

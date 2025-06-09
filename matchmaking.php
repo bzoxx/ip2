@@ -18,9 +18,9 @@
         </div>
         <nav>
             <ul>
-                <li><a href="dashboard.html" aria-label="Go to Dashboard">Dashboard</a></li>
-                <li><a href="profile.html" aria-label="View your Profile">Profile</a></li>
-                <li><a href="settings.html" aria-label="Go to Settings">Settings</a></li>
+                <li><a href="dashboard.php" aria-label="Go to Dashboard">Dashboard</a></li>
+                <li><a href="profile.php" aria-label="View your Profile">Profile</a></li>
+                <li><a href="settings.php" aria-label="Go to Settings">Settings</a></li>
             </ul>
         </nav>
     </header>
@@ -63,11 +63,6 @@
         </aside>
     </main>
 
-    <!-- Footer -->
-    <footer>
-        <p>&copy; 2024 Blind Cupid. All rights reserved.</p>
-        <p><a href="about.html">About</a> | <a href="privacyPolicy.html">Privacy Policy</a> | <a href="terms.html">Terms of Service</a></p>
-    </footer>
 
 </body>
 </html>

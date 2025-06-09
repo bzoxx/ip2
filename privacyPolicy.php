@@ -13,13 +13,8 @@
     <!-- Header -->
     <header>
         <div class="logo">
-            <h1><a href="index.html" aria-label="Go to Blind Cupid Home">Blind Cupid</a></h1>
+            <h1><a href="index.php" aria-label="Go to Blind Cupid Home">Blind Cupid</a></h1>
         </div>
-        <nav>
-            <ul>
-                <li><a href="index.html" aria-label="Go to Home">Home</a></li>
-       </ul>
-        </nav>
     </header>
 
     <!-- Main Content -->
