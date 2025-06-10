@@ -1,0 +1,40 @@
+.validation-feedback {
+    font-size: 0.85em;
+    margin-top: 4px;
+    margin-bottom: 8px;
+    min-height: 20px;
+}
+
+.validation-feedback.valid {
+    color: #2ecc71;
+}
+
+.validation-feedback.invalid {
+    color: #e74c3c;
+}
+
+input:invalid, select:invalid {
+    border-color: #e74c3c;
+}
+
+input:valid, select:valid {
+    border-color: #2ecc71;
+}
+
+button[type="submit"]:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+button[type="submit"]:disabled:hover {
+    background-color: #cccccc;
+}
+
+select {
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    width: 100%;
+    margin-bottom: 10px;
+} 
